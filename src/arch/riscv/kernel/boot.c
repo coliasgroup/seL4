@@ -428,7 +428,7 @@ static BOOT_CODE bool_t try_init_kernel(
     init_core_state(initial);
 
     /* convert the remaining free memory into UT objects and provide the caps */
-    if (!create_untypeds(root_cnode_cap)) {
+    if (!create_untypeds(root_cnode_cap, ndks_boot.slot_pos_cur)) {
         printf("ERROR: could not create untypteds for kernel image boot memory\n");
         return false;
     }
