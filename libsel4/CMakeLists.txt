@@ -58,13 +58,14 @@ gen_invocation_header(OUTPUT include/sel4/invocation.h XML include/interfaces/se
 
 gen_invocation_header(
     OUTPUT sel4_arch_include/${KernelSel4Arch}/sel4/sel4_arch/invocation.h
-    XML "${CMAKE_CURRENT_SOURCE_DIR}/sel4_arch_include/${KernelSel4Arch}/interfaces/sel4arch.xml"
+    XML
+        "${CMAKE_CURRENT_SOURCE_DIR}/sel4_arch_include/${KernelSel4Arch}/interfaces/sel4-sel4arch.xml"
     LIBSEL4 SEL4ARCH
 )
 
 gen_invocation_header(
     OUTPUT arch_include/${KernelArch}/sel4/arch/invocation.h
-    XML "${CMAKE_CURRENT_SOURCE_DIR}/arch_include/${KernelArch}/interfaces/sel4arch.xml"
+    XML "${CMAKE_CURRENT_SOURCE_DIR}/arch_include/${KernelArch}/interfaces/sel4-arch.xml"
     LIBSEL4 ARCH
 )
 
@@ -147,8 +148,8 @@ add_custom_command(
 
 set(
     interface_xmls
-    "${CMAKE_CURRENT_SOURCE_DIR}/sel4_arch_include/${KernelSel4Arch}/interfaces/sel4arch.xml"
-    "${CMAKE_CURRENT_SOURCE_DIR}/arch_include/${KernelArch}/interfaces/sel4arch.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sel4_arch_include/${KernelSel4Arch}/interfaces/sel4-sel4arch.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/arch_include/${KernelArch}/interfaces/sel4-arch.xml"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/interfaces/sel4.xml"
 )
 add_custom_command(
