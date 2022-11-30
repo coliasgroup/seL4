@@ -165,13 +165,13 @@ generated-markdown: ${GeneratedMarkdownDir}/GeneralSystemCalls.md \
 
 # Generate object invocation prototypes
 ${Stage}/object_invocations.h: ${Libsel4Dir}/include/interfaces/sel4.xml \
-                               ${Libsel4Dir}/arch_include/x86/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/arch_include/arm/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/sel4_arch_include/aarch32/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/sel4_arch_include/aarch64/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/sel4_arch_include/ia32/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/sel4_arch_include/x86_64/interfaces/sel4arch.xml \
-                               ${Libsel4Dir}/arch_include/riscv/interfaces/sel4arch.xml
+                               ${Libsel4Dir}/arch_include/x86/interfaces/sel4-arch.xml \
+                               ${Libsel4Dir}/arch_include/arm/interfaces/sel4-arch.xml \
+                               ${Libsel4Dir}/sel4_arch_include/aarch32/interfaces/sel4-sel4arch.xml \
+                               ${Libsel4Dir}/sel4_arch_include/aarch64/interfaces/sel4-sel4arch.xml \
+                               ${Libsel4Dir}/sel4_arch_include/ia32/interfaces/sel4-sel4arch.xml \
+                               ${Libsel4Dir}/sel4_arch_include/x86_64/interfaces/sel4-sel4arch.xml \
+                               ${Libsel4Dir}/arch_include/riscv/interfaces/sel4-arch.xml
 	@echo "====> Generating documented object invocation header"
 	${Q}${PYTHON} ${GenerateObjectInvocationTool} --dtd ${InterfaceDtd} --output $@ $^
 
