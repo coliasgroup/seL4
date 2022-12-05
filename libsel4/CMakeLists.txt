@@ -43,6 +43,13 @@ config_string(
     UNQUOTE
 )
 
+config_option(
+    LibSel4UseRust LIB_SEL4_USE_RUST
+    ""
+    DEFAULT ON
+    # DEFAULT OFF
+)
+
 if(LibSel4StubsUseIPCBufferOnly)
     set(buffer "--buffer")
 endif()
@@ -177,14 +184,117 @@ add_custom_target(
         sel4_arch_include/${KernelSel4Arch}/sel4/sel4_arch/types_gen.h
 )
 
-add_library(sel4 src/sel4_bootinfo.c)
-target_link_libraries(sel4 PRIVATE kernel_Config sel4_Config sel4_autoconf)
+add_library(sel4_pre "src/sel4_bootinfo.c")
+target_link_libraries(sel4_pre PRIVATE kernel_Config sel4_Config sel4_autoconf)
 target_include_directories(
-    sel4
+    sel4_pre
     PUBLIC
         ${source_header_dirs}
         "${CMAKE_CURRENT_BINARY_DIR}/include"
         "${CMAKE_CURRENT_BINARY_DIR}/arch_include/${KernelArch}"
         "${CMAKE_CURRENT_BINARY_DIR}/sel4_arch_include/${KernelSel4Arch}"
 )
-add_dependencies(sel4 sel4_generated)
+add_dependencies(sel4_pre sel4_generated)
+
+set(empty_c "src/empty.c")
+
+if(NOT LibSel4UseRust)
+    add_library(sel4 ${empty_c})
+    target_link_libraries(sel4 PUBLIC sel4_pre)
+else()
+    set(rust_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../projects/rust-seL4")
+    set(rust_build_dir "${CMAKE_CURRENT_BINARY_DIR}/../rust")
+    set(rust_out_dir "${CMAKE_CURRENT_BINARY_DIR}/rust")
+    set(rust_crate_name "sel4_sys_wrappers")
+    set(rust_lib_filename "lib${rust_crate_name}.a")
+    set(rust_lib_file "${rust_out_dir}/${rust_lib_filename}")
+
+    get_property(config_json TARGET kernel_Config PROPERTY GENERATED_JSON_FILE)
+
+    set(sel4_include_dirs "$<JOIN:$<TARGET_PROPERTY:sel4_pre,INCLUDE_DIRECTORIES>,:>")
+
+    if(KernelSel4ArchAarch64)
+        set(rust_target "aarch64-unknown-none")
+    elseif(KernelSel4ArchRiscV64)
+        set(rust_target "riscv64imac-unknown-none-elf")
+    elseif(KernelSel4ArchX86_64)
+        set(rust_target "x86_64-unknown-none")
+    else()
+        message(FATAL_ERROR "unsupported KernelSel4Arch '${KernelSel4Arch}'")
+    endif()
+
+    # HACK handle clash between C libgcc and Rust compiler-builtins
+    if(KernelSel4ArchRiscV64)
+        set(riscv64_objcopy_filename "riscv64-unknown-elf-objcopy")
+        find_program(riscv64_objcopy ${riscv64_objcopy_filename})
+        if("${riscv64_objcopy}" STREQUAL "riscv64_objcopy-NOTFOUND")
+            message(
+                FATAL_ERROR
+                    "Cannot find '${riscv64_objcopy_filename}' program."
+            )
+        endif()
+        set(rust_lib_fixup ${riscv64_objcopy} --weaken "${rust_lib_file}")
+    endif()
+
+    add_custom_target(
+        sel4_rust_cargo
+        DEPENDS
+            sel4_pre
+        BYPRODUCTS
+            ${rust_lib_file}
+        WORKING_DIRECTORY
+            ${rust_src_dir}
+        COMMAND
+            ${CMAKE_COMMAND} -E env
+                SEL4_INCLUDE_DIRS=${sel4_include_dirs}
+                SEL4_CONFIG=${config_json}
+                    cargo build
+                        -Z unstable-options
+                        --locked
+                        --target ${rust_target}
+                        -Z build-std=core,alloc,compiler_builtins -Z build-std-features=compiler-builtins-mem
+                        --target-dir ${rust_build_dir}
+                        --out-dir ${rust_out_dir}
+                        -p sel4-sys-wrappers
+        COMMAND
+            ${rust_lib_fixup}
+        USES_TERMINAL
+    )
+
+    add_library(sel4_rust STATIC IMPORTED GLOBAL)
+    set_property(
+        TARGET sel4_rust
+        PROPERTY IMPORTED_LOCATION "${rust_lib_file}"
+    )
+    add_dependencies(sel4_rust sel4_rust_cargo)
+
+    set(patched_headers_dir "${CMAKE_CURRENT_BINARY_DIR}/patched_headers.d")
+    set(patch_headers_py "${CMAKE_CURRENT_SOURCE_DIR}/tools/patch_headers.py")
+
+    add_custom_target(
+        patched_headers
+        DEPENDS
+            sel4_pre
+            ${patch_headers_py}
+        BYPRODUCTS
+            ${patched_headers_dir}
+        COMMAND
+            rm -rf ${patched_headers_dir}
+        COMMAND
+            mkdir -p ${patched_headers_dir}
+        COMMAND
+            python3 ${patch_headers_py}
+                ${patched_headers_dir}
+                ${sel4_include_dirs}
+        USES_TERMINAL
+    )
+
+    add_library(sel4 ${empty_c})
+    target_link_libraries(sel4 PUBLIC sel4_rust)
+    target_include_directories(
+        sel4
+        PUBLIC
+            ${patched_headers_dir}
+    )
+    add_dependencies(sel4 patched_headers)
+endif()
