@@ -43,6 +43,13 @@ config_string(
     UNQUOTE
 )
 
+config_option(
+    LibSel4UseRust LIB_SEL4_USE_RUST
+    ""
+    DEFAULT ON
+    # DEFAULT OFF
+)
+
 if(LibSel4StubsUseIPCBufferOnly)
     set(buffer "--buffer")
 endif()
@@ -180,14 +187,124 @@ add_custom_target(
         sel4_arch_include/${KernelSel4Arch}/sel4/sel4_arch/types_gen.h
 )
 
-add_library(sel4 src/sel4_bootinfo.c)
-target_link_libraries(sel4 PRIVATE kernel_Config sel4_Config sel4_autoconf)
+add_library(sel4_pre "src/sel4_bootinfo.c")
+target_link_libraries(sel4_pre PRIVATE kernel_Config sel4_Config sel4_autoconf)
 target_include_directories(
-    sel4
+    sel4_pre
     PUBLIC
         ${source_header_dirs}
         "${CMAKE_CURRENT_BINARY_DIR}/include"
         "${CMAKE_CURRENT_BINARY_DIR}/arch_include/${KernelArch}"
         "${CMAKE_CURRENT_BINARY_DIR}/sel4_arch_include/${KernelSel4Arch}"
 )
-add_dependencies(sel4 sel4_generated)
+add_dependencies(sel4_pre sel4_generated)
+
+set(empty_c "src/empty.c")
+
+if(NOT LibSel4UseRust)
+    add_library(sel4 ${empty_c})
+    target_link_libraries(sel4 PUBLIC sel4_pre)
+else()
+    if(NOT DEFINED HACK_CARGO_MANIFEST_PATH)
+        message(FATAL_ERROR "HACK_CARGO_MANIFEST_PATH must be set" )
+    endif()
+    if(NOT DEFINED HACK_CARGO_CONFIG)
+        message(FATAL_ERROR "HACK_CARGO_CONFIG must be set" )
+    endif()
+
+    if(HACK_CARGO_RELEASE)
+        set(cargo_profile_flags "--release" )
+    endif()
+
+    if(NOT HACK_CARGO_NO_BUILD_SYSROOT)
+        set(cargo_build_sysroot_flags "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem,compiler-builtins-weak-intrinsics")
+    endif()
+
+    set(cargo_manifest_path "${HACK_CARGO_MANIFEST_PATH}")
+    set(cargo_config "${HACK_CARGO_CONFIG}")
+    set(rust_build_root_dir "${CMAKE_CURRENT_BINARY_DIR}/rust")
+    set(rust_build_target_dir "${rust_build_root_dir}/target")
+    set(rust_build_out_dir "${rust_build_root_dir}/out")
+    set(rust_crate_name "sel4_sys_wrappers")
+    set(rust_lib_filename "lib${rust_crate_name}.a")
+    set(rust_lib_file "${rust_build_out_dir}/${rust_lib_filename}")
+
+    set(sel4_include_dirs "$<JOIN:$<TARGET_PROPERTY:sel4_pre,INCLUDE_DIRECTORIES>,:>")
+
+    if(KernelSel4ArchAarch64)
+        set(rust_target "aarch64-unknown-none")
+    elseif(KernelSel4ArchAarch32)
+        set(rust_target "armv7a-none-eabi")
+    elseif(KernelSel4ArchRiscV64)
+        set(rust_target "riscv64imac-unknown-none-elf")
+    elseif(KernelSel4ArchRiscV32)
+        set(rust_target "riscv32imac-unknown-none-elf")
+    elseif(KernelSel4ArchX86_64)
+        set(rust_target "x86_64-unknown-none")
+    else()
+        message(FATAL_ERROR "unsupported KernelSel4Arch '${KernelSel4Arch}'")
+    endif()
+
+    add_custom_target(
+        sel4_rust_cargo
+        DEPENDS
+            sel4_pre
+        BYPRODUCTS
+            ${rust_lib_file}
+        COMMAND
+            ${CMAKE_COMMAND} -E env
+                SEL4_INCLUDE_DIRS=${sel4_include_dirs}
+                SEL4_OBJECT_API=${CMAKE_CURRENT_SOURCE_DIR}/include/interfaces/sel4.xml
+                SEL4_OBJECT_API_ARCH=${CMAKE_CURRENT_SOURCE_DIR}/arch_include/${KernelArch}/interfaces/sel4arch.xml
+                SEL4_OBJECT_API_SEL4_ARCH=${CMAKE_CURRENT_SOURCE_DIR}/sel4_arch_include/${KernelSel4Arch}/interfaces/sel4arch.xml
+                    cargo build
+                        -Z unstable-options
+                        --config ${cargo_config}
+                        --locked
+                        --target ${rust_target}
+                        ${cargo_build_sysroot_flags}
+                        ${cargo_profile_flags}
+                        --target-dir ${rust_build_target_dir}
+                        --out-dir ${rust_build_out_dir}
+                        --manifest-path ${cargo_manifest_path}
+                        -p sel4-sys-wrappers
+        USES_TERMINAL
+    )
+
+    add_library(sel4_rust STATIC IMPORTED GLOBAL)
+    set_property(
+        TARGET sel4_rust
+        PROPERTY IMPORTED_LOCATION "${rust_lib_file}"
+    )
+    add_dependencies(sel4_rust sel4_rust_cargo)
+
+    set(patched_headers_dir "${CMAKE_CURRENT_BINARY_DIR}/patched_headers.d")
+    set(patch_headers_py "${CMAKE_CURRENT_SOURCE_DIR}/tools/patch_headers.py")
+
+    add_custom_target(
+        patched_headers
+        DEPENDS
+            sel4_pre
+            ${patch_headers_py}
+        BYPRODUCTS
+            ${patched_headers_dir}
+        COMMAND
+            rm -rf ${patched_headers_dir}
+        COMMAND
+            mkdir -p ${patched_headers_dir}
+        COMMAND
+            python3 ${patch_headers_py}
+                ${patched_headers_dir}
+                ${sel4_include_dirs}
+        USES_TERMINAL
+    )
+
+    add_library(sel4 ${empty_c})
+    target_link_libraries(sel4 PUBLIC sel4_rust)
+    target_include_directories(
+        sel4
+        PUBLIC
+            ${patched_headers_dir}
+    )
+    add_dependencies(sel4 patched_headers)
+endif()
