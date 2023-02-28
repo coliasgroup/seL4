@@ -719,6 +719,12 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     set_target_properties(sel4 PROPERTIES EXCLUDE_FROM_ALL ON)
     # Install kernel.elf to bin/kernel.elf
     install(TARGETS kernel.elf RUNTIME DESTINATION bin)
+    if(DEFINED KernelDTBPath)
+        install(FILES ${KernelDTBPath} DESTINATION support)
+    endif()
+    if(DEFINED platform_yaml)
+        install(FILES ${platform_yaml} DESTINATION support)
+    endif()
     # Install all libsel4 headers to libsel4/include
     install(
         DIRECTORY
