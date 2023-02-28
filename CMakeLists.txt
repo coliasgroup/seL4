@@ -738,6 +738,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
         DESTINATION libsel4/include
         FILES_MATCHING
         PATTERN "*.h"
+        PATTERN "*.yaml"
     )
     # Install libsel4 sources to libsel4/src
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libsel4/src/" DESTINATION libsel4/src)
