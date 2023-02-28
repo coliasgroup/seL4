@@ -594,7 +594,7 @@ function(generate_autoconf targetname config_list)
     add_library(${targetname} INTERFACE)
     target_link_libraries(${targetname} INTERFACE ${link_list})
     target_include_directories(${targetname} INTERFACE "${config_dir}")
-    add_dependencies(${targetname} ${targetname}_Gen ${config_file})
+    add_dependencies(${targetname} ${targetname}_Gen ${config_file} ${gen_list})
     # Set our GENERATED_FILES property to include the GENERATED_FILES of all of our input
     # configurations, as well as the files we generated
     set_property(
