@@ -209,8 +209,8 @@ else()
         message(FATAL_ERROR "HACK_CARGO_CONFIG must be set" )
     endif()
 
-    if("${HACK_RUST_SYSROOT}" STREQUAL "")
-        set(cargo_sysroot_flags "-Z build-std=core,alloc,compiler_builtins" "-Z build-std-features=compiler-builtins-mem" )
+    if(NOT "${HACK_RUST_NO_BUILD_SYSROOT}")
+        set(cargo_build_sysroot_flags "-Z build-std=core,alloc,compiler_builtins" "-Z build-std-features=compiler-builtins-mem" )
     endif()
 
     set(rust_src_dir "${HACK_RUST_SEL4_SOURCE_DIR}")
@@ -259,7 +259,7 @@ else()
                         -Z unstable-options
                         -Z bindeps
                         --config ${cargo_config}
-                        ${cargo_sysroot_flags}
+                        ${cargo_build_sysroot_flags}
                         --locked
                         --target ${rust_target}
                         --target-dir ${rust_build_dir}
