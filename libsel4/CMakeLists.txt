@@ -202,14 +202,24 @@ if(NOT LibSel4UseRust)
     add_library(sel4 ${empty_c})
     target_link_libraries(sel4 PUBLIC sel4_pre)
 else()
-    set(rust_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../projects/rust-seL4")
-    set(rust_build_dir "${CMAKE_CURRENT_BINARY_DIR}/../rust")
-    set(rust_out_dir "${CMAKE_CURRENT_BINARY_DIR}/rust")
+    if("${HACK_RUST_SEL4_SOURCE_DIR}" STREQUAL "")
+        message(FATAL_ERROR "HACK_RUST_SEL4_SOURCE_DIR must be set" )
+    endif()
+    if("${HACK_CARGO_CONFIG}" STREQUAL "")
+        message(FATAL_ERROR "HACK_CARGO_CONFIG must be set" )
+    endif()
+
+    if("${HACK_RUST_SYSROOT}" STREQUAL "")
+        set(cargo_sysroot_flags "-Z build-std=core,alloc,compiler_builtins" "-Z build-std-features=compiler-builtins-mem" )
+    endif()
+
+    set(rust_src_dir "${HACK_RUST_SEL4_SOURCE_DIR}")
+    set(rust_build_dir "${CMAKE_CURRENT_BINARY_DIR}/rust/target")
+    set(rust_out_dir "${CMAKE_CURRENT_BINARY_DIR}/rust/out")
     set(rust_crate_name "sel4_sys_wrappers")
     set(rust_lib_filename "lib${rust_crate_name}.a")
     set(rust_lib_file "${rust_out_dir}/${rust_lib_filename}")
-
-    get_property(config_json TARGET kernel_Config PROPERTY GENERATED_JSON_FILE)
+    set(cargo_config "${HACK_CARGO_CONFIG}")
 
     set(sel4_include_dirs "$<JOIN:$<TARGET_PROPERTY:sel4_pre,INCLUDE_DIRECTORIES>,:>")
 
@@ -242,19 +252,19 @@ else()
             sel4_pre
         BYPRODUCTS
             ${rust_lib_file}
-        WORKING_DIRECTORY
-            ${rust_src_dir}
         COMMAND
             ${CMAKE_COMMAND} -E env
                 SEL4_INCLUDE_DIRS=${sel4_include_dirs}
-                SEL4_CONFIG=${config_json}
                     cargo build
                         -Z unstable-options
+                        -Z bindeps
+                        --config ${cargo_config}
+                        ${cargo_sysroot_flags}
                         --locked
                         --target ${rust_target}
-                        -Z build-std=core,alloc,compiler_builtins -Z build-std-features=compiler-builtins-mem
                         --target-dir ${rust_build_dir}
                         --out-dir ${rust_out_dir}
+                        --manifest-path ${rust_src_dir}/Cargo.toml
                         -p sel4-sys-wrappers
         COMMAND
             ${rust_lib_fixup}
