@@ -235,7 +235,7 @@ else()
 
     # HACK handle clash between C libgcc and Rust compiler-builtins
     if(KernelSel4ArchRiscV64)
-        set(riscv64_objcopy_filename "riscv64-unknown-elf-objcopy")
+        set(riscv64_objcopy_filename "$ENV{OBJCOPY}")
         find_program(riscv64_objcopy ${riscv64_objcopy_filename})
         if("${riscv64_objcopy}" STREQUAL "riscv64_objcopy-NOTFOUND")
             message(
