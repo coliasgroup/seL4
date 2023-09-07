@@ -234,8 +234,12 @@ else()
 
     if(KernelSel4ArchAarch64)
         set(rust_target "aarch64-unknown-none")
+    elseif(KernelSel4ArchAarch32)
+        set(rust_target "armv7a-none-eabi")
     elseif(KernelSel4ArchRiscV64)
         set(rust_target "riscv64imac-unknown-none-elf")
+    elseif(KernelSel4ArchRiscV32)
+        set(rust_target "riscv32imac-unknown-none-elf")
     elseif(KernelSel4ArchX86_64)
         set(rust_target "x86_64-unknown-none")
     else()
@@ -243,13 +247,13 @@ else()
     endif()
 
     # HACK handle clash between C libgcc and Rust compiler-builtins
-    if(KernelSel4ArchRiscV64)
-        set(riscv64_objcopy_filename "${CMAKE_OBJCOPY}")
-        find_program(riscv64_objcopy ${riscv64_objcopy_filename})
-        if("${riscv64_objcopy}" STREQUAL "riscv64_objcopy-NOTFOUND")
+    if(KernelArchRiscV)
+        set(objcopy_filename "${CMAKE_OBJCOPY}")
+        find_program(objcopy ${objcopy_filename})
+        if("${objcopy}" STREQUAL "objcopy-NOTFOUND")
             message(
                 FATAL_ERROR
-                    "Cannot find '${riscv64_objcopy_filename}' program."
+                    "Cannot find '${objcopy_filename}' program."
             )
         endif()
         if(DEFINED HACK_COMPILER_BUILTINS_SYMBOLS)
@@ -257,7 +261,7 @@ else()
         else()
             set(weaken_flag "--weaken")
         endif()
-        set(rust_lib_fixup ${riscv64_objcopy} "${weaken_flag}" "${rust_lib_file}")
+        set(rust_lib_fixup ${objcopy} "${weaken_flag}" "${rust_lib_file}")
     endif()
 
     add_custom_target(
