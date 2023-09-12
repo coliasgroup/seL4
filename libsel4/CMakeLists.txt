@@ -218,7 +218,7 @@ else()
     endif()
 
     if(NOT HACK_CARGO_NO_BUILD_SYSROOT)
-        set(cargo_build_sysroot_flags "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem" )
+        set(cargo_build_sysroot_flags "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem,compiler-builtins-weak-intrinsics")
     endif()
 
     set(cargo_manifest_path "${HACK_CARGO_MANIFEST_PATH}")
@@ -244,24 +244,6 @@ else()
         set(rust_target "x86_64-unknown-none")
     else()
         message(FATAL_ERROR "unsupported KernelSel4Arch '${KernelSel4Arch}'")
-    endif()
-
-    # HACK handle clash between C libgcc and Rust compiler-builtins
-    if(KernelArchRiscV)
-        set(objcopy_filename "${CMAKE_OBJCOPY}")
-        find_program(objcopy ${objcopy_filename})
-        if("${objcopy}" STREQUAL "objcopy-NOTFOUND")
-            message(
-                FATAL_ERROR
-                    "Cannot find '${objcopy_filename}' program."
-            )
-        endif()
-        if(DEFINED HACK_COMPILER_BUILTINS_SYMBOLS)
-            set(weaken_flag "--weaken-symbols=${HACK_COMPILER_BUILTINS_SYMBOLS}")
-        else()
-            set(weaken_flag "--weaken")
-        endif()
-        set(rust_lib_fixup ${objcopy} "${weaken_flag}" "${rust_lib_file}")
     endif()
 
     add_custom_target(
