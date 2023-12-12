@@ -660,7 +660,6 @@ BOOT_CODE VISIBLE void init_kernel(
 
     if (!result) {
         fail("ERROR: kernel init failed");
-        UNREACHABLE();
     }
 
 #ifdef CONFIG_KERNEL_MCS
