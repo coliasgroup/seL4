@@ -60,7 +60,7 @@ typedef word_t irq_t;
  *
  * @return     The active IRQ. irqInvalid if no IRQ is pending.
  */
-static inline irq_t getActiveIRQ(void);
+static irq_t NO_INLINE getActiveIRQ(void);
 
 /**
  * Checks if an IRQ is currently pending in the hardware.

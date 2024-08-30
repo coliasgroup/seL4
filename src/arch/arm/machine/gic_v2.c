@@ -7,6 +7,22 @@
 #include <config.h>
 #include <arch/machine/gic_v2.h>
 
+static irq_t NO_INLINE getActiveIRQ(void)
+{
+    irq_t irq;
+    if (!IS_IRQ_VALID(active_irq[CURRENT_CPU_INDEX()])) {
+        active_irq[CURRENT_CPU_INDEX()] = gic_cpuiface->int_ack;
+    }
+
+    if (IS_IRQ_VALID(active_irq[CURRENT_CPU_INDEX()])) {
+        irq = CORE_IRQ_TO_IRQT(CURRENT_CPU_INDEX(), active_irq[CURRENT_CPU_INDEX()] & IRQ_MASK);
+    } else {
+        irq = irqInvalid;
+    }
+
+    return irq;
+}
+
 #define TARGET_CPU_ALLINT(CPU) ( \
         ( ((CPU)&0xff)<<0u  ) |\
         ( ((CPU)&0xff)<<8u  ) |\

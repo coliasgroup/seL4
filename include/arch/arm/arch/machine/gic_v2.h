@@ -141,22 +141,6 @@ static inline void dist_enable_set(word_t irq)
     gic_dist->enable_set[word] = BIT(bit);
 }
 
-static inline irq_t getActiveIRQ(void)
-{
-    irq_t irq;
-    if (!IS_IRQ_VALID(active_irq[CURRENT_CPU_INDEX()])) {
-        active_irq[CURRENT_CPU_INDEX()] = gic_cpuiface->int_ack;
-    }
-
-    if (IS_IRQ_VALID(active_irq[CURRENT_CPU_INDEX()])) {
-        irq = CORE_IRQ_TO_IRQT(CURRENT_CPU_INDEX(), active_irq[CURRENT_CPU_INDEX()] & IRQ_MASK);
-    } else {
-        irq = irqInvalid;
-    }
-
-    return irq;
-}
-
 /*
  * GIC has 4 states: pending->active(+pending)->inactive
  * seL4 expects two states: active->inactive.
