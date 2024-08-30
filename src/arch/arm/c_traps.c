@@ -38,7 +38,6 @@ void VISIBLE NORETURN c_handle_undefined_instruction(void)
     }
 
     restore_user_context();
-    UNREACHABLE();
 #endif
 
     /* There's only one user-level fault on ARM, and the code is (0,0) */
@@ -48,7 +47,6 @@ void VISIBLE NORETURN c_handle_undefined_instruction(void)
     handleUserLevelFault(getESR(), 0);
 #endif
     restore_user_context();
-    UNREACHABLE();
 }
 
 #if defined(CONFIG_HAVE_FPU) && defined(CONFIG_ARCH_AARCH64)
@@ -88,7 +86,6 @@ static inline void NORETURN c_handle_vm_fault(vm_fault_type_t type)
     handleVMFaultEvent(type);
     restore_user_context();
 #endif
-    UNREACHABLE();
 }
 
 void VISIBLE NORETURN c_handle_data_fault(void)
@@ -135,7 +132,6 @@ void NORETURN slowpath(syscall_t syscall)
     }
 
     restore_user_context();
-    UNREACHABLE();
 }
 
 void VISIBLE c_handle_syscall(word_t cptr, word_t msgInfo, syscall_t syscall)
