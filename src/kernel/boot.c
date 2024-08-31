@@ -812,7 +812,7 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
     // }
 
     /* convert remaining freemem into UT objects and provide the caps */
-    // for (word_t i = 0; i < 4; i++) {
+    for (word_t i = 0; i < 4; i++) {
         // region_t reg = ndks_boot.freemem[i];
         // region_t reg = {0};
         // ndks_boot.freemem[i] = REG_EMPTY;
@@ -822,7 +822,7 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
             //        (unsigned int)i, reg.start, reg.end);
             return false;
         }
-    // }
+    }
 
     // ndks_boot.bi_frame->untyped = (seL4_SlotRegion) {
     //     .start = first_untyped_slot,
