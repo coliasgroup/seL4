@@ -767,7 +767,7 @@ BOOT_CODE static NO_INLINE bool_t create_untypeds_for_region(
 // #pragma GCC optimize ("O0")
 BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 {
-    seL4_SlotPos first_untyped_slot = ndks_boot.slot_pos_cur;
+    seL4_SlotPos first_untyped_slot = 0;
 
     // paddr_t start = 0;
     // for (word_t i = 0; i < ndks_boot.resv_count; i++) {
