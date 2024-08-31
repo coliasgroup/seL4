@@ -814,9 +814,9 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
     /* convert remaining freemem into UT objects and provide the caps */
     for (word_t i = 0; i < 4; i++) {
         // region_t reg = ndks_boot.freemem[i];
-        region_t reg = {0};
+        // region_t reg = {0};
         // ndks_boot.freemem[i] = REG_EMPTY;
-        if (!create_untypeds_for_region(root_cnode_cap, false, reg, 0)) {
+        if (!create_untypeds_for_region((cap_t){0}, false, (region_t){0}, 0)) {
             // printf("ERROR: creation of untypeds for free memory region #%u at"
             //        " [%"SEL4_PRIx_word"..%"SEL4_PRIx_word"] failed\n",
             //        (unsigned int)i, reg.start, reg.end);
