@@ -763,8 +763,8 @@ BOOT_CODE static NO_INLINE bool_t create_untypeds_for_region(
     return true;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+// #pragma GCC push_options
+// #pragma GCC optimize ("O0")
 BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 {
     // seL4_SlotPos first_untyped_slot = 0;
@@ -831,7 +831,7 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 
     return true;
 }
-#pragma GCC pop_options
+// #pragma GCC pop_options
 
 BOOT_CODE void bi_finalise(void)
 {
