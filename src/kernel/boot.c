@@ -763,8 +763,8 @@ BOOT_CODE static NO_INLINE bool_t create_untypeds_for_region(
     return true;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
+// #pragma GCC push_options
+// #pragma GCC optimize ("O0")
 BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 {
     seL4_SlotPos first_untyped_slot = ndks_boot.slot_pos_cur;
@@ -813,7 +813,8 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 
     /* convert remaining freemem into UT objects and provide the caps */
     for (word_t i = 0; i < ARRAY_SIZE(ndks_boot.freemem); i++) {
-        region_t reg = ndks_boot.freemem[i];
+        // region_t reg = ndks_boot.freemem[i];
+        region_t reg = {0};
         // ndks_boot.freemem[i] = REG_EMPTY;
         if (!create_untypeds_for_region(root_cnode_cap, false, reg, first_untyped_slot)) {
             // printf("ERROR: creation of untypeds for free memory region #%u at"
@@ -830,7 +831,7 @@ BOOT_CODE bool_t create_untypeds(cap_t root_cnode_cap)
 
     return true;
 }
-#pragma GCC pop_options
+// #pragma GCC pop_options
 
 BOOT_CODE void bi_finalise(void)
 {
