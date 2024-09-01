@@ -921,6 +921,8 @@ BOOT_BSS static region_t avail_reg[MAX_NUM_FREEMEM_REG];
  * Dynamically initialise the available memory on the platform.
  * A region represents an area of memory.
  */
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
                               word_t n_reserved, const region_t *reserved,
                               v_region_t it_v_reg, word_t extra_bi_size_bits)
@@ -1064,3 +1066,4 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
     //        "objects, need size/alignment of 2^%"SEL4_PRIu_word"\n", max);
     return false;
 }
+#pragma GCC pop_options
