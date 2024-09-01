@@ -116,6 +116,16 @@ BOOT_CODE bool_t NO_INLINE reserve_region(p_region_t reg)
     return true;
 }
 
+
+static p_region_t CONST NO_INLINE pptr_to_paddr_reg(const region_t reg)
+{
+    return (p_region_t) {
+        .start = pptr_to_paddr((const void *)reg.start),
+        .end   = pptr_to_paddr((const void *)reg.end),
+    };
+}
+
+
 BOOT_CODE static bool_t NO_INLINE __attribute__((unused)) insert_region(region_t reg)
 {
     assert(reg.start <= reg.end);
@@ -969,22 +979,22 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
                 /* the region overlaps with the start of the available region.
                  * trim start of the available region */
                 avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
-                // reserve_region(pptr_to_paddr_reg(reserved[r]));
+                reserve_region(pptr_to_paddr_reg(reserved[r]));
                 r++;
-            } else {
-                // assert(reserved[r].start < avail_reg[a].end);
-                /* take the first chunk of the available region and move
-                 * the start to the end of the reserved region */
-                // region_t m = avail_reg[a];
-                // m.end = reserved[r].start;
-                // insert_region(m);
-                if (avail_reg[a].end > reserved[r].end) {
-                    avail_reg[a].start = reserved[r].end;
-                    reserve_region(pptr_to_paddr_reg(reserved[r]));
-                    r++;
-                } else {
-                    a++;
-                }
+            // } else {
+            //     // assert(reserved[r].start < avail_reg[a].end);
+            //     /* take the first chunk of the available region and move
+            //      * the start to the end of the reserved region */
+            //     // region_t m = avail_reg[a];
+            //     // m.end = reserved[r].start;
+            //     // insert_region(m);
+            //     if (avail_reg[a].end > reserved[r].end) {
+            //         avail_reg[a].start = reserved[r].end;
+            //         reserve_region(pptr_to_paddr_reg(reserved[r]));
+            //         r++;
+            //     } else {
+            //         a++;
+            //     }
             }
         // }
     }

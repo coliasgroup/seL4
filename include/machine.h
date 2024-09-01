@@ -47,13 +47,13 @@ static inline region_t CONST paddr_to_pptr_reg(const p_region_t p_reg)
     };
 }
 
-static inline p_region_t CONST pptr_to_paddr_reg(const region_t reg)
-{
-    return (p_region_t) {
-        .start = pptr_to_paddr((const void *)reg.start),
-        .end   = pptr_to_paddr((const void *)reg.end),
-    };
-}
+// static inline p_region_t CONST pptr_to_paddr_reg(const region_t reg)
+// {
+//     return (p_region_t) {
+//         .start = pptr_to_paddr((const void *)reg.start),
+//         .end   = pptr_to_paddr((const void *)reg.end),
+//     };
+// }
 
 
 #include <mode/machine.h>
