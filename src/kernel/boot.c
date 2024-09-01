@@ -116,7 +116,7 @@ BOOT_CODE bool_t reserve_region(p_region_t reg)
     return true;
 }
 
-BOOT_CODE static bool_t insert_region(region_t reg)
+BOOT_CODE static bool_t __attribute__((unused)) insert_region(region_t reg)
 {
     assert(reg.start <= reg.end);
     if (is_reg_empty(reg)) {
@@ -955,37 +955,37 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
         } else if (avail_reg[a].start >= avail_reg[a].end) {
             /* skip the entire region - it's empty now after trimming */
             a++;
-        } else if (reserved[r].end <= avail_reg[a].start) {
-            /* the reserved region is below the available region - skip it */
-            reserve_region(pptr_to_paddr_reg(reserved[r]));
-            r++;
-        } else if (reserved[r].start >= avail_reg[a].end) {
-            /* the reserved region is above the available region - take the whole thing */
-            insert_region(avail_reg[a]);
-            a++;
-        } else {
-            /* the reserved region overlaps with the available region */
-            if (reserved[r].start <= avail_reg[a].start) {
-                /* the region overlaps with the start of the available region.
-                 * trim start of the available region */
-                avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
-                reserve_region(pptr_to_paddr_reg(reserved[r]));
-                r++;
-            } else {
-                assert(reserved[r].start < avail_reg[a].end);
-                /* take the first chunk of the available region and move
-                 * the start to the end of the reserved region */
-                region_t m = avail_reg[a];
-                m.end = reserved[r].start;
-                insert_region(m);
-                if (avail_reg[a].end > reserved[r].end) {
-                    avail_reg[a].start = reserved[r].end;
-                    reserve_region(pptr_to_paddr_reg(reserved[r]));
-                    r++;
-                } else {
-                    a++;
-                }
-            }
+        // } else if (reserved[r].end <= avail_reg[a].start) {
+        //     /* the reserved region is below the available region - skip it */
+        //     reserve_region(pptr_to_paddr_reg(reserved[r]));
+        //     r++;
+        // } else if (reserved[r].start >= avail_reg[a].end) {
+        //     /* the reserved region is above the available region - take the whole thing */
+        //     insert_region(avail_reg[a]);
+        //     a++;
+        // } else {
+        //     /* the reserved region overlaps with the available region */
+        //     if (reserved[r].start <= avail_reg[a].start) {
+        //         /* the region overlaps with the start of the available region.
+        //          * trim start of the available region */
+        //         avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
+        //         reserve_region(pptr_to_paddr_reg(reserved[r]));
+        //         r++;
+        //     } else {
+        //         assert(reserved[r].start < avail_reg[a].end);
+        //         /* take the first chunk of the available region and move
+        //          * the start to the end of the reserved region */
+        //         region_t m = avail_reg[a];
+        //         m.end = reserved[r].start;
+        //         insert_region(m);
+        //         if (avail_reg[a].end > reserved[r].end) {
+        //             avail_reg[a].start = reserved[r].end;
+        //             reserve_region(pptr_to_paddr_reg(reserved[r]));
+        //             r++;
+        //         } else {
+        //             a++;
+        //         }
+        //     }
         }
     }
 
