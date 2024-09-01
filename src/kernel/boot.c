@@ -198,7 +198,7 @@ BOOT_CODE static void maybe_alloc_extra_bi(word_t cmp_size_bits, word_t extra_bi
 /* Create pptrs for all root server objects, starting at a give start address,
  * to cover the virtual memory region v_reg, and any extra boot info.
  */
-BOOT_CODE static void create_rootserver_objects(pptr_t start, v_region_t it_v_reg,
+BOOT_CODE static void UNUSED create_rootserver_objects(pptr_t start, v_region_t it_v_reg,
                                                 word_t extra_bi_size_bits)
 {
     /* the largest object the PD, the root cnode, or the extra boot info */
@@ -848,7 +848,7 @@ BOOT_CODE static inline pptr_t ceiling_kernel_window(pptr_t p)
     return p;
 }
 
-BOOT_CODE static bool_t check_available_memory(word_t n_available,
+BOOT_CODE static bool_t UNUSED check_available_memory(word_t n_available,
                                                const p_region_t *available)
 {
     /* The system configuration is broken if no region is available. */
@@ -887,7 +887,7 @@ BOOT_CODE static bool_t check_available_memory(word_t n_available,
 }
 
 
-BOOT_CODE static bool_t check_reserved_memory(word_t n_reserved,
+BOOT_CODE static bool_t UNUSED check_reserved_memory(word_t n_reserved,
                                               const region_t *reserved)
 {
     printf("reserved virt address space regions: %"SEL4_PRIu_word"\n",
