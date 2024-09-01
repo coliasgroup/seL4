@@ -965,13 +965,13 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
         //     a++;
         // } else {
             /* the reserved region overlaps with the available region */
-            if (reserved[r].start <= avail_reg[a].start) {
+            // if (reserved[r].start <= avail_reg[a].start) {
                 /* the region overlaps with the start of the available region.
                  * trim start of the available region */
                 avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
                 reserve_region(pptr_to_paddr_reg(reserved[r]));
                 r++;
-            } else {
+            // } else {
             //     // assert(reserved[r].start < avail_reg[a].end);
             //     /* take the first chunk of the available region and move
             //      * the start to the end of the reserved region */
@@ -979,13 +979,13 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
             //     // m.end = reserved[r].start;
             //     // insert_region(m);
             //     if (avail_reg[a].end > reserved[r].end) {
-                    avail_reg[a].start = reserved[r].end;
+                    // avail_reg[a].start = reserved[r].end;
             //         reserve_region(pptr_to_paddr_reg(reserved[r]));
             //         r++;
             //     } else {
             //         a++;
             //     }
-            }
+            // }
         // }
     }
 
