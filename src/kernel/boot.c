@@ -916,7 +916,7 @@ BOOT_CODE static bool_t __attribute__((unused)) check_reserved_memory(word_t n_r
 
 /* we can't declare arrays on the stack, so this is space for
  * the function below to use. */
-BOOT_BSS static region_t avail_reg[MAX_NUM_FREEMEM_REG];
+BOOT_BSS region_t VISIBLE avail_reg[MAX_NUM_FREEMEM_REG];
 /**
  * Dynamically initialise the available memory on the platform.
  * A region represents an area of memory.
