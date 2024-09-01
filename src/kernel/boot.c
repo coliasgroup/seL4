@@ -957,6 +957,7 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
             a++;
         } else if (reserved[r].end <= avail_reg[a].start) {
             /* the reserved region is below the available region - skip it*/
+            reserve_region(pptr_to_paddr_reg(reserved[r]));
             r++;
         } else if (reserved[r].start > avail_reg[a].end) {
             /* the reserved region is above the available region - take the whole thing */
@@ -968,6 +969,7 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
                 /* the region overlaps with the start of the available region.
                  * trim start of the available region */
                 avail_reg[a].start = reserved[r].end;
+                reserve_region(pptr_to_paddr_reg(reserved[r]));
                 r++;
             } else {
                 /* take the first chunk of the available region and move
