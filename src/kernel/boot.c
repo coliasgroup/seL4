@@ -918,78 +918,12 @@ BOOT_CODE static bool_t check_reserved_memory(word_t n_reserved,
 /* we can't declare arrays on the stack, so this is space for
  * the function below to use. */
 BOOT_BSS static region_t avail_reg[MAX_NUM_FREEMEM_REG];
-/**
- * Dynamically initialise the available memory on the platform.
- * A region represents an area of memory.
- */
-BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
+
+BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_region_t *available,
                               word_t n_reserved, const region_t *reserved,
-                              v_region_t it_v_reg, word_t extra_bi_size_bits)
+                              v_region_t it_v_reg, word_t extra_bi_size_bits,
+                              int a, int r)
 {
-
-    if (!check_available_memory(n_available, available)) {
-        return false;
-    }
-
-    if (!check_reserved_memory(n_reserved, reserved)) {
-        return false;
-    }
-
-    for (word_t i = 0; i < ARRAY_SIZE(ndks_boot.freemem); i++) {
-        ndks_boot.freemem[i] = REG_EMPTY;
-    }
-
-    /* convert the available regions to pptrs */
-    for (word_t i = 0; i < n_available; i++) {
-        avail_reg[i] = paddr_to_pptr_reg(available[i]);
-        avail_reg[i].end = ceiling_kernel_window(avail_reg[i].end);
-        avail_reg[i].start = ceiling_kernel_window(avail_reg[i].start);
-    }
-
-    word_t a = 0;
-    word_t r = 0;
-    /* Now iterate through the available regions, removing any reserved regions. */
-    while (a < n_available && r < n_reserved) {
-        if (reserved[r].start == reserved[r].end) {
-            /* reserved region is empty - skip it */
-            r++;
-        } else if (avail_reg[a].start >= avail_reg[a].end) {
-            /* skip the entire region - it's empty now after trimming */
-            a++;
-        } else if (reserved[r].end <= avail_reg[a].start) {
-            /* the reserved region is below the available region - skip it */
-            reserve_region(pptr_to_paddr_reg(reserved[r]));
-            r++;
-        } else if (reserved[r].start >= avail_reg[a].end) {
-            /* the reserved region is above the available region - take the whole thing */
-            insert_region(avail_reg[a]);
-            a++;
-        } else {
-            /* the reserved region overlaps with the available region */
-            if (reserved[r].start <= avail_reg[a].start) {
-                /* the region overlaps with the start of the available region.
-                 * trim start of the available region */
-                avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
-                reserve_region(pptr_to_paddr_reg(reserved[r]));
-                r++;
-            } else {
-                assert(reserved[r].start < avail_reg[a].end);
-                /* take the first chunk of the available region and move
-                 * the start to the end of the reserved region */
-                region_t m = avail_reg[a];
-                m.end = reserved[r].start;
-                insert_region(m);
-                if (avail_reg[a].end > reserved[r].end) {
-                    avail_reg[a].start = reserved[r].end;
-                    reserve_region(pptr_to_paddr_reg(reserved[r]));
-                    r++;
-                } else {
-                    a++;
-                }
-            }
-        }
-    }
-
     for (; r < n_reserved; r++) {
         if (reserved[r].start < reserved[r].end) {
             reserve_region(pptr_to_paddr_reg(reserved[r]));
@@ -1064,4 +998,84 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
     printf("ERROR: no free memory region is big enough for root server "
            "objects, need size/alignment of 2^%"SEL4_PRIu_word"\n", max);
     return false;
+}
+
+/**
+ * Dynamically initialise the available memory on the platform.
+ * A region represents an area of memory.
+ */
+BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
+                              word_t n_reserved, const region_t *reserved,
+                              v_region_t it_v_reg, word_t extra_bi_size_bits)
+{
+
+    if (!check_available_memory(n_available, available)) {
+        return false;
+    }
+
+    if (!check_reserved_memory(n_reserved, reserved)) {
+        return false;
+    }
+
+    for (word_t i = 0; i < ARRAY_SIZE(ndks_boot.freemem); i++) {
+        ndks_boot.freemem[i] = REG_EMPTY;
+    }
+
+    /* convert the available regions to pptrs */
+    for (word_t i = 0; i < n_available; i++) {
+        avail_reg[i] = paddr_to_pptr_reg(available[i]);
+        avail_reg[i].end = ceiling_kernel_window(avail_reg[i].end);
+        avail_reg[i].start = ceiling_kernel_window(avail_reg[i].start);
+    }
+
+    word_t a = 0;
+    word_t r = 0;
+    /* Now iterate through the available regions, removing any reserved regions. */
+    while (a < n_available && r < n_reserved) {
+        if (reserved[r].start == reserved[r].end) {
+            /* reserved region is empty - skip it */
+            r++;
+        } else if (avail_reg[a].start >= avail_reg[a].end) {
+            /* skip the entire region - it's empty now after trimming */
+            a++;
+        } else if (reserved[r].end <= avail_reg[a].start) {
+            /* the reserved region is below the available region - skip it */
+            reserve_region(pptr_to_paddr_reg(reserved[r]));
+            r++;
+        } else if (reserved[r].start >= avail_reg[a].end) {
+            /* the reserved region is above the available region - take the whole thing */
+            insert_region(avail_reg[a]);
+            a++;
+        } else {
+            /* the reserved region overlaps with the available region */
+            if (reserved[r].start <= avail_reg[a].start) {
+                /* the region overlaps with the start of the available region.
+                 * trim start of the available region */
+                avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
+                reserve_region(pptr_to_paddr_reg(reserved[r]));
+                r++;
+            } else {
+                assert(reserved[r].start < avail_reg[a].end);
+                /* take the first chunk of the available region and move
+                 * the start to the end of the reserved region */
+                region_t m = avail_reg[a];
+                m.end = reserved[r].start;
+                insert_region(m);
+                if (avail_reg[a].end > reserved[r].end) {
+                    avail_reg[a].start = reserved[r].end;
+                    reserve_region(pptr_to_paddr_reg(reserved[r]));
+                    r++;
+                } else {
+                    a++;
+                }
+            }
+        }
+    }
+
+    bool_t ret = false;
+    ret = init_freemem_1(n_available, available,
+                              n_reserved, reserved,
+                              it_v_reg, extra_bi_size_bits,
+                              a, r);
+    return ret;
 }
