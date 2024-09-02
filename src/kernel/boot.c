@@ -947,125 +947,125 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
 
     word_t a = 0;
     word_t r = 0;
-    /* Now iterate through the available regions, removing any reserved regions. */
-    while (a < n_available && r < n_reserved) {
-        /* We take local copies of array entries for use in the following `if`
-         * conditions. This works around an issue in the binary correctness
-         * proofs. Note however, that the temporaries are reset at the
-         * beginning of each loop iteration, so updates to the current region
-         * must still write to the array, not the temporary. */
-        region_t avail = avail_reg[a];
-        region_t res = reserved[r];
+    // /* Now iterate through the available regions, removing any reserved regions. */
+    // while (a < n_available && r < n_reserved) {
+    //     /* We take local copies of array entries for use in the following `if`
+    //      * conditions. This works around an issue in the binary correctness
+    //      * proofs. Note however, that the temporaries are reset at the
+    //      * beginning of each loop iteration, so updates to the current region
+    //      * must still write to the array, not the temporary. */
+    //     region_t avail = avail_reg[a];
+    //     region_t res = reserved[r];
 
-        if (res.start == res.end) {
-            /* reserved region is empty - skip it */
-            r++;
-        } else if (avail.start >= avail.end) {
-            /* skip the entire region - it's empty now after trimming */
-            a++;
-        } else if (res.end <= avail.start) {
-            /* the reserved region is below the available region - skip it */
+    //     if (res.start == res.end) {
+    //         /* reserved region is empty - skip it */
+    //         r++;
+    //     } else if (avail.start >= avail.end) {
+    //         /* skip the entire region - it's empty now after trimming */
+    //         a++;
+    //     } else if (res.end <= avail.start) {
+    //         /* the reserved region is below the available region - skip it */
+    //         reserve_region(pptr_to_paddr_reg(reserved[r]));
+    //         r++;
+    //     } else if (res.start >= avail.end) {
+    //         /* the reserved region is above the available region - take the whole thing */
+    //         insert_region(avail_reg[a]);
+    //         a++;
+    //     } else {
+    //         /* the reserved region overlaps with the available region */
+    //         if (res.start <= avail.start) {
+    //             /* the region overlaps with the start of the available region.
+    //              * trim start of the available region */
+    //             avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
+    //             reserve_region(pptr_to_paddr_reg(reserved[r]));
+    //             r++;
+    //         } else {
+    //             assert(reserved[r].start < avail_reg[a].end);
+    //             /* take the first chunk of the available region and move
+    //              * the start to the end of the reserved region */
+    //             region_t m = avail_reg[a];
+    //             m.end = reserved[r].start;
+    //             insert_region(m);
+    //             if (avail.end > res.end) {
+    //                 avail_reg[a].start = reserved[r].end;
+    //                 reserve_region(pptr_to_paddr_reg(reserved[r]));
+    //                 r++;
+    //             } else {
+    //                 a++;
+    //             }
+    //         }
+    //     }
+    // }
+
+    for (; r < n_reserved; r++) {
+        if (reserved[r].start < reserved[r].end) {
             reserve_region(pptr_to_paddr_reg(reserved[r]));
-            r++;
-        } else if (res.start >= avail.end) {
-            /* the reserved region is above the available region - take the whole thing */
-            insert_region(avail_reg[a]);
-            a++;
-        // } else {
-        //     /* the reserved region overlaps with the available region */
-        //     if (res.start <= avail.start) {
-        //         /* the region overlaps with the start of the available region.
-        //          * trim start of the available region */
-        //         avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
-        //         reserve_region(pptr_to_paddr_reg(reserved[r]));
-        //         r++;
-        //     } else {
-        //         assert(reserved[r].start < avail_reg[a].end);
-        //         /* take the first chunk of the available region and move
-        //          * the start to the end of the reserved region */
-        //         region_t m = avail_reg[a];
-        //         m.end = reserved[r].start;
-        //         insert_region(m);
-        //         if (avail.end > res.end) {
-        //             avail_reg[a].start = reserved[r].end;
-        //             reserve_region(pptr_to_paddr_reg(reserved[r]));
-        //             r++;
-        //         } else {
-        //             a++;
-        //         }
-        //     }
         }
     }
 
-    // for (; r < n_reserved; r++) {
-    //     if (reserved[r].start < reserved[r].end) {
-    //         reserve_region(pptr_to_paddr_reg(reserved[r]));
-    //     }
-    // }
+    /* no more reserved regions - add the rest */
+    for (; a < n_available; a++) {
+        if (avail_reg[a].start < avail_reg[a].end) {
+            insert_region(avail_reg[a]);
+        }
+    }
 
-    // /* no more reserved regions - add the rest */
-    // for (; a < n_available; a++) {
-    //     if (avail_reg[a].start < avail_reg[a].end) {
-    //         insert_region(avail_reg[a]);
-    //     }
-    // }
+    /* now try to fit the root server objects into a region */
+    int i = ARRAY_SIZE(ndks_boot.freemem) - 1;
+    if (!is_reg_empty(ndks_boot.freemem[i])) {
+        printf("ERROR: insufficient MAX_NUM_FREEMEM_REG (%u)\n",
+               (unsigned int)MAX_NUM_FREEMEM_REG);
+        return false;
+    }
+    /* skip any empty regions */
+    for (; i >= 0 && is_reg_empty(ndks_boot.freemem[i]); i--);
 
-    // /* now try to fit the root server objects into a region */
-    // int i = ARRAY_SIZE(ndks_boot.freemem) - 1;
-    // if (!is_reg_empty(ndks_boot.freemem[i])) {
-    //     printf("ERROR: insufficient MAX_NUM_FREEMEM_REG (%u)\n",
-    //            (unsigned int)MAX_NUM_FREEMEM_REG);
-    //     return false;
-    // }
-    // /* skip any empty regions */
-    // for (; i >= 0 && is_reg_empty(ndks_boot.freemem[i]); i--);
+    /* try to grab the last available p region to create the root server objects
+     * from. If possible, retain any left over memory as an extra p region */
+    word_t size = calculate_rootserver_size(it_v_reg, extra_bi_size_bits);
+    word_t max = rootserver_max_size_bits(extra_bi_size_bits);
+    for (; i >= 0; i--) {
+        /* Invariant: both i and (i + 1) are valid indices in ndks_boot.freemem. */
+        assert(i < ARRAY_SIZE(ndks_boot.freemem) - 1);
+        /* Invariant; the region at index i is the current candidate.
+         * Invariant: regions 0 up to (i - 1), if any, are additional candidates.
+         * Invariant: region (i + 1) is empty. */
+        assert(is_reg_empty(ndks_boot.freemem[i + 1]));
+        /* Invariant: regions above (i + 1), if any, are empty or too small to use.
+         * Invariant: all non-empty regions are ordered, disjoint and unallocated. */
 
-    // /* try to grab the last available p region to create the root server objects
-    //  * from. If possible, retain any left over memory as an extra p region */
-    // word_t size = calculate_rootserver_size(it_v_reg, extra_bi_size_bits);
-    // word_t max = rootserver_max_size_bits(extra_bi_size_bits);
-    // for (; i >= 0; i--) {
-    //     /* Invariant: both i and (i + 1) are valid indices in ndks_boot.freemem. */
-    //     assert(i < ARRAY_SIZE(ndks_boot.freemem) - 1);
-    //     /* Invariant; the region at index i is the current candidate.
-    //      * Invariant: regions 0 up to (i - 1), if any, are additional candidates.
-    //      * Invariant: region (i + 1) is empty. */
-    //     assert(is_reg_empty(ndks_boot.freemem[i + 1]));
-    //     /* Invariant: regions above (i + 1), if any, are empty or too small to use.
-    //      * Invariant: all non-empty regions are ordered, disjoint and unallocated. */
+        /* We make a fresh variable to index the known-empty region, because the
+         * SimplExportAndRefine verification test has poor support for array
+         * indices that are sums of variables and small constants. */
+        int empty_index = i + 1;
 
-    //     /* We make a fresh variable to index the known-empty region, because the
-    //      * SimplExportAndRefine verification test has poor support for array
-    //      * indices that are sums of variables and small constants. */
-    //     int empty_index = i + 1;
-
-    //     /* Try to take the top-most suitably sized and aligned chunk. */
-    //     pptr_t unaligned_start = ndks_boot.freemem[i].end - size;
-    //     pptr_t start = ROUND_DOWN(unaligned_start, max);
-    //     /* if unaligned_start didn't underflow, and start fits in the region,
-    //      * then we've found a region that fits the root server objects. */
-    //     if (unaligned_start <= ndks_boot.freemem[i].end
-    //         && start >= ndks_boot.freemem[i].start) {
-    //         create_rootserver_objects(start, it_v_reg, extra_bi_size_bits);
-    //         /* There may be leftovers before and after the memory we used. */
-    //         /* Shuffle the after leftover up to the empty slot (i + 1). */
-    //         ndks_boot.freemem[empty_index] = (region_t) {
-    //             .start = start + size,
-    //             .end = ndks_boot.freemem[i].end
-    //         };
-    //         /* Leave the before leftover in current slot i. */
-    //         ndks_boot.freemem[i].end = start;
-    //         /* Regions i and (i + 1) are now well defined, ordered, disjoint,
-    //          * and unallocated, so we can return successfully. */
-    //         return true;
-    //     }
-    //     /* Region i isn't big enough, so shuffle it up to slot (i + 1),
-    //      * which we know is unused. */
-    //     ndks_boot.freemem[empty_index] = ndks_boot.freemem[i];
-    //     /* Now region i is unused, so make it empty to reestablish the invariant
-    //      * for the next iteration (when it will be slot i + 1). */
-    //     ndks_boot.freemem[i] = REG_EMPTY;
-    // }
+        /* Try to take the top-most suitably sized and aligned chunk. */
+        pptr_t unaligned_start = ndks_boot.freemem[i].end - size;
+        pptr_t start = ROUND_DOWN(unaligned_start, max);
+        /* if unaligned_start didn't underflow, and start fits in the region,
+         * then we've found a region that fits the root server objects. */
+        if (unaligned_start <= ndks_boot.freemem[i].end
+            && start >= ndks_boot.freemem[i].start) {
+            create_rootserver_objects(start, it_v_reg, extra_bi_size_bits);
+            /* There may be leftovers before and after the memory we used. */
+            /* Shuffle the after leftover up to the empty slot (i + 1). */
+            ndks_boot.freemem[empty_index] = (region_t) {
+                .start = start + size,
+                .end = ndks_boot.freemem[i].end
+            };
+            /* Leave the before leftover in current slot i. */
+            ndks_boot.freemem[i].end = start;
+            /* Regions i and (i + 1) are now well defined, ordered, disjoint,
+             * and unallocated, so we can return successfully. */
+            return true;
+        }
+        /* Region i isn't big enough, so shuffle it up to slot (i + 1),
+         * which we know is unused. */
+        ndks_boot.freemem[empty_index] = ndks_boot.freemem[i];
+        /* Now region i is unused, so make it empty to reestablish the invariant
+         * for the next iteration (when it will be slot i + 1). */
+        ndks_boot.freemem[i] = REG_EMPTY;
+    }
 
     // /* We didn't find a big enough region. */
     // printf("ERROR: no free memory region is big enough for root server "
