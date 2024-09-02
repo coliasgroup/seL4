@@ -55,7 +55,9 @@ irq_t irqInvalid = CORE_IRQ_TO_IRQT(-1, -1);
 
 #else
 #define IRQ_IS_PPI(irq) HW_IRQ_IS_PPI(irq)
-irq_t irqInvalid = (uint16_t) -1;
+enum {
+    irqInvalid = (uint16_t) -1
+};
 #endif
 
 /* Setters/getters helpers for hardware irqs */
