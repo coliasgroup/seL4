@@ -164,14 +164,14 @@ BOOT_CODE static pptr_t alloc_rootserver_obj(word_t size_bits, word_t n)
     return allocated;
 }
 
-BOOT_CODE static word_t rootserver_max_size_bits(word_t extra_bi_size_bits)
+BOOT_CODE static word_t NO_INLINE rootserver_max_size_bits(word_t extra_bi_size_bits)
 {
     word_t cnode_size_bits = CONFIG_ROOT_CNODE_SIZE_BITS + seL4_SlotBits;
     word_t max = MAX(cnode_size_bits, seL4_VSpaceBits);
     return MAX(max, extra_bi_size_bits);
 }
 
-BOOT_CODE static word_t calculate_rootserver_size(v_region_t it_v_reg, word_t extra_bi_size_bits)
+BOOT_CODE static word_t NO_INLINE calculate_rootserver_size(v_region_t it_v_reg, word_t extra_bi_size_bits)
 {
     /* work out how much memory we need for root server objects */
     word_t size = BIT(CONFIG_ROOT_CNODE_SIZE_BITS + seL4_SlotBits);
@@ -1022,8 +1022,8 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
 
     /* try to grab the last available p region to create the root server objects
      * from. If possible, retain any left over memory as an extra p region */
-    word_t size = calculate_rootserver_size(it_v_reg, extra_bi_size_bits);
-    word_t max = rootserver_max_size_bits(extra_bi_size_bits);
+    // word_t size = calculate_rootserver_size(it_v_reg, extra_bi_size_bits);
+    // word_t max = rootserver_max_size_bits(extra_bi_size_bits);
     for (; i >= 0; i--) {
         /* Invariant: both i and (i + 1) are valid indices in ndks_boot.freemem. */
         assert(i < ARRAY_SIZE(ndks_boot.freemem) - 1);
@@ -1039,26 +1039,26 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
          * indices that are sums of variables and small constants. */
         int empty_index = i + 1;
 
-        /* Try to take the top-most suitably sized and aligned chunk. */
-        pptr_t unaligned_start = ndks_boot.freemem[i].end - size;
-        pptr_t start = ROUND_DOWN(unaligned_start, max);
-        /* if unaligned_start didn't underflow, and start fits in the region,
-         * then we've found a region that fits the root server objects. */
-        if (unaligned_start <= ndks_boot.freemem[i].end
-            && start >= ndks_boot.freemem[i].start) {
-            create_rootserver_objects(start, it_v_reg, extra_bi_size_bits);
-            /* There may be leftovers before and after the memory we used. */
-            /* Shuffle the after leftover up to the empty slot (i + 1). */
-            ndks_boot.freemem[empty_index] = (region_t) {
-                .start = start + size,
-                .end = ndks_boot.freemem[i].end
-            };
-            /* Leave the before leftover in current slot i. */
-            ndks_boot.freemem[i].end = start;
-            /* Regions i and (i + 1) are now well defined, ordered, disjoint,
-             * and unallocated, so we can return successfully. */
-            return true;
-        }
+        // /* Try to take the top-most suitably sized and aligned chunk. */
+        // pptr_t unaligned_start = ndks_boot.freemem[i].end - size;
+        // pptr_t start = ROUND_DOWN(unaligned_start, max);
+        // /* if unaligned_start didn't underflow, and start fits in the region,
+        //  * then we've found a region that fits the root server objects. */
+        // if (unaligned_start <= ndks_boot.freemem[i].end
+        //     && start >= ndks_boot.freemem[i].start) {
+        //     create_rootserver_objects(start, it_v_reg, extra_bi_size_bits);
+        //     /* There may be leftovers before and after the memory we used. */
+        //     /* Shuffle the after leftover up to the empty slot (i + 1). */
+        //     ndks_boot.freemem[empty_index] = (region_t) {
+        //         .start = start + size,
+        //         .end = ndks_boot.freemem[i].end
+        //     };
+        //     /* Leave the before leftover in current slot i. */
+        //     ndks_boot.freemem[i].end = start;
+        //     /* Regions i and (i + 1) are now well defined, ordered, disjoint,
+        //      * and unallocated, so we can return successfully. */
+        //     return true;
+        // }
         /* Region i isn't big enough, so shuffle it up to slot (i + 1),
          * which we know is unused. */
         ndks_boot.freemem[empty_index] = ndks_boot.freemem[i];
