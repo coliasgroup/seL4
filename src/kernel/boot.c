@@ -919,7 +919,7 @@ BOOT_CODE static bool_t check_reserved_memory(word_t n_reserved,
  * the function below to use. */
 BOOT_BSS static region_t avail_reg[MAX_NUM_FREEMEM_REG];
 
-BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_region_t *available,
+BOOT_CODE static bool_t NO_INLINE init_freemem_2(word_t n_available, const p_region_t *available,
                               word_t n_reserved, const region_t *reserved,
                               v_region_t it_v_reg, word_t extra_bi_size_bits,
                               int a, int r)
@@ -1004,30 +1004,10 @@ BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_reg
  * Dynamically initialise the available memory on the platform.
  * A region represents an area of memory.
  */
-BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
+BOOT_CODE static bool_t init_freemem_1(word_t n_available, const p_region_t *available,
                               word_t n_reserved, const region_t *reserved,
                               v_region_t it_v_reg, word_t extra_bi_size_bits)
 {
-
-    if (!check_available_memory(n_available, available)) {
-        return false;
-    }
-
-    if (!check_reserved_memory(n_reserved, reserved)) {
-        return false;
-    }
-
-    for (word_t i = 0; i < ARRAY_SIZE(ndks_boot.freemem); i++) {
-        ndks_boot.freemem[i] = REG_EMPTY;
-    }
-
-    /* convert the available regions to pptrs */
-    for (word_t i = 0; i < n_available; i++) {
-        avail_reg[i] = paddr_to_pptr_reg(available[i]);
-        avail_reg[i].end = ceiling_kernel_window(avail_reg[i].end);
-        avail_reg[i].start = ceiling_kernel_window(avail_reg[i].start);
-    }
-
     word_t a = 0;
     word_t r = 0;
     /* Now iterate through the available regions, removing any reserved regions. */
@@ -1076,9 +1056,33 @@ BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
     }
 
     bool_t ret = false;
-    ret = init_freemem_1(n_available, available,
+    ret = init_freemem_2(n_available, available,
                               n_reserved, reserved,
                               it_v_reg, extra_bi_size_bits,
                               a, r);
+    return ret;
+}
+
+BOOT_CODE bool_t init_freemem(word_t n_available, const p_region_t *available,
+                              word_t n_reserved, const region_t *reserved,
+                              v_region_t it_v_reg, word_t extra_bi_size_bits)
+{
+
+    if (!check_available_memory(n_available, available)) {
+        return false;
+    }
+
+    if (!check_reserved_memory(n_reserved, reserved)) {
+        return false;
+    }
+
+    for (word_t i = 0; i < ARRAY_SIZE(ndks_boot.freemem); i++) {
+        ndks_boot.freemem[i] = REG_EMPTY;
+    }
+
+    bool_t ret = false;
+    ret = init_freemem_1(n_available, available,
+                              n_reserved, reserved,
+                              it_v_reg, extra_bi_size_bits);
     return ret;
 }
