@@ -952,6 +952,11 @@ BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_reg
     word_t size = calculate_rootserver_size(it_v_reg, extra_bi_size_bits);
     word_t max = rootserver_max_size_bits(extra_bi_size_bits);
     for (; i >= 0; i--) {
+        /* We make a fresh variable to index the known-empty region, because the
+         * SimplExportAndRefine verification test has poor support for array
+         * indices that are sums of variables and small constants. */
+        int empty_index = i + 1;
+
         /* Invariant: both i and (i + 1) are valid indices in ndks_boot.freemem. */
         assert(i < ARRAY_SIZE(ndks_boot.freemem) - 1);
         /* Invariant; the region at index i is the current candidate.
@@ -960,11 +965,6 @@ BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_reg
         assert(is_reg_empty(ndks_boot.freemem[i + 1]));
         /* Invariant: regions above (i + 1), if any, are empty or too small to use.
          * Invariant: all non-empty regions are ordered, disjoint and unallocated. */
-
-        /* We make a fresh variable to index the known-empty region, because the
-         * SimplExportAndRefine verification test has poor support for array
-         * indices that are sums of variables and small constants. */
-        int empty_index = i + 1;
 
         /* Try to take the top-most suitably sized and aligned chunk. */
         pptr_t unaligned_start = ndks_boot.freemem[i].end - size;
