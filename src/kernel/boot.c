@@ -994,38 +994,45 @@ BOOT_CODE bool_t __attribute__(( optimize (
     word_t r = 0;
     /* Now iterate through the available regions, removing any reserved regions. */
     while (a < n_available && r < n_reserved) {
-        if (reserved[r].start == reserved[r].end) {
+        /* We take local copies of array entries for use for reading. This works around an issue in the binary correctness
+         * proofs. Note however, that the temporaries are reset at the
+         * beginning of each loop iteration, so updates to the current region
+         * must still write to the array, not the temporary. */
+        region_t avail = avail_reg[a];
+        region_t res = reserved[r];
+
+        if (res.start == res.end) {
             /* reserved region is empty - skip it */
             r++;
-        } else if (avail_reg[a].start >= avail_reg[a].end) {
+        } else if (avail.start >= avail.end) {
             /* skip the entire region - it's empty now after trimming */
             a++;
-        } else if (reserved[r].end <= avail_reg[a].start) {
+        } else if (res.end <= avail.start) {
             /* the reserved region is below the available region - skip it */
-            reserve_region(pptr_to_paddr_reg(reserved[r]));
+            reserve_region(pptr_to_paddr_reg(res));
             r++;
-        } else if (reserved[r].start >= avail_reg[a].end) {
+        } else if (res.start >= avail.end) {
             /* the reserved region is above the available region - take the whole thing */
-            insert_region(avail_reg[a]);
+            insert_region(avail);
             a++;
         } else {
             /* the reserved region overlaps with the available region */
-            if (reserved[r].start <= avail_reg[a].start) {
+            if (res.start <= avail.start) {
                 /* the region overlaps with the start of the available region.
                  * trim start of the available region */
-                avail_reg[a].start = MIN(avail_reg[a].end, reserved[r].end);
-                reserve_region(pptr_to_paddr_reg(reserved[r]));
+                avail_reg[a].start = MIN(avail.end, res.end);
+                reserve_region(pptr_to_paddr_reg(res));
                 r++;
             } else {
-                assert(reserved[r].start < avail_reg[a].end);
+                assert(res.start < avail.end);
                 /* take the first chunk of the available region and move
                  * the start to the end of the reserved region */
-                region_t m = avail_reg[a];
-                m.end = reserved[r].start;
+                region_t m = avail;
+                m.end = res.start;
                 insert_region(m);
-                if (avail_reg[a].end > reserved[r].end) {
-                    avail_reg[a].start = reserved[r].end;
-                    reserve_region(pptr_to_paddr_reg(reserved[r]));
+                if (avail.end > res.end) {
+                    avail_reg[a].start = res.end;
+                    reserve_region(pptr_to_paddr_reg(res));
                     r++;
                 } else {
                     a++;
