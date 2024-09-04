@@ -1004,7 +1004,7 @@ BOOT_CODE static bool_t NO_INLINE init_freemem_2(word_t n_available, const p_reg
  * Dynamically initialise the available memory on the platform.
  * A region represents an area of memory.
  */
-BOOT_CODE static bool_t init_freemem_1(word_t n_available, const p_region_t *available,
+BOOT_CODE static bool_t NO_INLINE init_freemem_1(word_t n_available, const p_region_t *available,
                               word_t n_reserved, const region_t *reserved,
                               v_region_t it_v_reg, word_t extra_bi_size_bits)
 {
