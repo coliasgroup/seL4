@@ -310,7 +310,7 @@ void cancelIPC(tcb_t *tptr)
 
 #ifdef CONFIG_KERNEL_MCS
     /* cancel ipc cancels all faults */
-    seL4_Fault_NullFault_ptr_new(&tptr->tcbFault);
+    tptr->tcbFault = seL4_Fault_NullFault_new();
 #endif
 
     switch (ts_type) {
