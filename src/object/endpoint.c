@@ -306,14 +306,13 @@ void replyFromKernel_success_empty(tcb_t *thread)
 void cancelIPC(tcb_t *tptr)
 {
     thread_state_t *state = &tptr->tcbState;
-    uint64_t ts_type = thread_state_ptr_get_tsType(state);
 
 #ifdef CONFIG_KERNEL_MCS
     /* cancel ipc cancels all faults */
     tptr->tcbFault = seL4_Fault_NullFault_new();
 #endif
 
-    switch (ts_type) {
+    switch (thread_state_ptr_get_tsType(state)) {
     case ThreadState_BlockedOnSend:
     case ThreadState_BlockedOnReceive: {
         /* blockedIPCCancel state */
