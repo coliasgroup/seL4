@@ -334,7 +334,7 @@ void cancelIPC(tcb_t *tptr)
         }
 
 #ifdef CONFIG_KERNEL_MCS
-        reply_t *reply = REPLY_PTR(thread_state_get_replyObject(tptr->tcbState));
+        reply_t *reply = REPLY_PTR(thread_state_get_replyObject(state));
         if (reply != NULL) {
             reply_unlink(reply, tptr);
         }
