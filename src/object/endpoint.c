@@ -43,8 +43,6 @@ void sendIPC(bool_t blocking, bool_t do_call, word_t badge,
                 &thread->tcbState, canGrantReply);
             thread_state_ptr_set_blockingIPCIsCall(
                 &thread->tcbState, do_call);
-            thread_state_ptr_set_replyObject(
-                &thread->tcbState, REPLY_REF(0));
 
             scheduleTCB(thread);
 
@@ -336,9 +334,11 @@ void cancelIPC(tcb_t *tptr)
         }
 
 #ifdef CONFIG_KERNEL_MCS
-        reply_t *reply = REPLY_PTR(thread_state_ptr_get_replyObject(state));
-        if (reply != NULL) {
-            reply_unlink(reply, tptr);
+        if (thread_state_ptr_get_tsType(state) == ThreadState_BlockedOnReceive) {
+            reply_t *reply = REPLY_PTR(thread_state_ptr_get_replyObject(state));
+            if (reply != NULL) {
+                reply_unlink(reply, tptr);
+            }
         }
 #endif
         setThreadState(tptr, ThreadState_Inactive);
