@@ -43,6 +43,8 @@ void sendIPC(bool_t blocking, bool_t do_call, word_t badge,
                 &thread->tcbState, canGrantReply);
             thread_state_ptr_set_blockingIPCIsCall(
                 &thread->tcbState, do_call);
+            thread_state_ptr_set_replyObject(
+                &thread->tcbState, REPLY_REF(0));
 
             scheduleTCB(thread);
 
