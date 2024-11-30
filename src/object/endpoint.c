@@ -334,9 +334,11 @@ void cancelIPC(tcb_t *tptr)
         }
 
 #ifdef CONFIG_KERNEL_MCS
-        reply_t *reply = REPLY_PTR(thread_state_get_replyObject(tptr->tcbState));
-        if (reply != NULL) {
-            reply_unlink(reply, tptr);
+        if (thread_state_ptr_get_tsType(state) == ThreadState_BlockedOnReceive) {
+            reply_t *reply = REPLY_PTR(thread_state_get_replyObject(tptr->tcbState));
+            if (reply != NULL) {
+                reply_unlink(reply, tptr);
+            }
         }
 #endif
         setThreadState(tptr, ThreadState_Inactive);
