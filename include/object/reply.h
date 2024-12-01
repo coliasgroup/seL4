@@ -13,11 +13,13 @@
 /* Unlink a reply from its tcb */
 static inline void reply_unlink(reply_t *reply, tcb_t *tcb)
 {
+    assert(thread_state_get_tsType(tcb->tcbState) == ThreadState_BlockedOnReceive ||
+           thread_state_get_tsType(tcb->tcbState) == ThreadState_BlockedOnReply);
+
     /* check the tcb and reply are linked correctly */
     assert(reply->replyTCB == tcb);
     assert(thread_state_get_replyObject(tcb->tcbState) == REPLY_REF(reply));
 
-    thread_state_ptr_set_replyObject(&tcb->tcbState, REPLY_REF(0));
     reply->replyTCB = NULL;
     setThreadState(tcb, ThreadState_Inactive);
 }
