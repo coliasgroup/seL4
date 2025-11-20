@@ -612,7 +612,7 @@ static inline bool_t CONST capCyclicZombie(cap_t cap, cte_t *slot)
            CTE_PTR(cap_zombie_cap_get_capZombiePtr(cap)) == slot;
 }
 
-static finaliseSlot_ret_t finaliseSlot(cte_t *slot, bool_t immediate)
+static finaliseSlot_ret_t NO_INLINE finaliseSlot(cte_t *slot, bool_t immediate)
 {
     bool_t final;
     finaliseCap_ret_t fc_ret;
