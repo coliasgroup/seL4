@@ -21,7 +21,7 @@
 BOOT_BSS ndks_boot_t ndks_boot;
 
 BOOT_BSS rootserver_mem_t rootserver;
-BOOT_BSS static region_t rootserver_mem;
+BOOT_BSS USED static region_t rootserver_mem;
 
 /* Returns the physical region of the kernel image boot part, which is the part
  * that is no longer needed once booting is finished. */
