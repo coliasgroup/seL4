@@ -2039,7 +2039,10 @@ class TaggedUnion:
                 "asserts": '  \n'.join(field_asserts)
             }
 
-            generator = union_generator_template % print_params
+            xprint_params = dict(print_params)
+            xprint_params['inline'] = "static __attribute__((noinline)) "
+
+            generator = union_generator_template % xprint_params
             ptr_generator = ptr_union_generator_template % print_params
 
             emit_named("%s_%s_new" % (self.name, name), params, generator)
@@ -2681,6 +2684,9 @@ class Block:
             "ptr_inits": mk_inits("%s_ptr->" % self.name),
             "asserts": '  \n'.join(field_asserts)
         }
+
+        # xprint_params = dict(print_params)
+        # xprint_params['inline'] = "static __attribute__((noinline)) "
 
         generator = generator_template % print_params
         ptr_generator = ptr_generator_template % print_params
