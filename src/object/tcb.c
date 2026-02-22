@@ -353,7 +353,7 @@ cptr_t PURE getExtraCPtr(word_t *bufferPtr, word_t i)
     return (cptr_t)bufferPtr[seL4_MsgMaxLength + 2 + i];
 }
 
-void setExtraBadge(word_t *bufferPtr, word_t badge,
+void __attribute__((noinline)) setExtraBadge(word_t *bufferPtr, word_t badge,
                    word_t i)
 {
     bufferPtr[seL4_MsgMaxLength + 2 + i] = badge;

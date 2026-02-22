@@ -65,7 +65,8 @@ ASSERTS = {
 }
 
 INLINE = {
-    'sel4': 'static inline',
+    # 'sel4': 'static inline',
+    'sel4': 'static __attribute__((noinline))',
     'libsel4': 'LIBSEL4_INLINE_FUNC'
 }
 
