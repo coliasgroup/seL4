@@ -2740,6 +2740,11 @@ class Block:
             emit_named("%s_ptr_get_%s" % (self.name, field), params,
                        ptr_reader_template % subs)
 
+            if self.name == "mdb_node":
+                xsubs = dict(subs)
+                subs['inline'] = "static __attribute__((noinline)) "
+            else:
+                xsubs = subs
             # Pointer lifted writer
             emit_named("%s_ptr_set_%s" % (self.name, field), params,
                        ptr_writer_template % subs)
