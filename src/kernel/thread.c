@@ -238,7 +238,7 @@ void doFaultTransfer(word_t badge, tcb_t *sender, tcb_t *receiver,
 }
 
 /* Like getReceiveSlots, this is specialised for single-cap transfer. */
-static seL4_MessageInfo_t transferCaps(seL4_MessageInfo_t info,
+static seL4_MessageInfo_t __attribute__((noinline)) transferCaps(seL4_MessageInfo_t info,
                                        endpoint_t *endpoint, tcb_t *receiver,
                                        word_t *receiveBuffer)
 {

@@ -79,7 +79,7 @@ static inline seL4_MessageInfo_t CONST messageInfoFromWord_raw(word_t w)
     return mi;
 }
 
-static inline seL4_MessageInfo_t CONST messageInfoFromWord(word_t w)
+static inline seL4_MessageInfo_t __attribute__((noinline)) messageInfoFromWord(word_t w)
 {
     seL4_MessageInfo_t mi;
     word_t len;
