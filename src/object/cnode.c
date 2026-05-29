@@ -661,7 +661,7 @@ static finaliseSlot_ret_t NO_INLINE finaliseSlot(cte_t *slot, bool_t immediate)
     return ret;
 }
 
-static exception_t NO_INLINE reduceZombie(cte_t *slot, bool_t immediate)
+static exception_t reduceZombie(cte_t *slot, bool_t immediate)
 {
     cte_t *ptr;
     word_t n, type;
