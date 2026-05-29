@@ -549,7 +549,7 @@ exception_t cteRevoke(cte_t *slot)
     return EXCEPTION_NONE;
 }
 
-exception_t NO_INLINE cteDelete(cte_t *slot, bool_t exposed)
+exception_t cteDelete(cte_t *slot, bool_t exposed)
 {
     finaliseSlot_ret_t fs_ret;
 
@@ -661,7 +661,7 @@ static finaliseSlot_ret_t NO_INLINE finaliseSlot(cte_t *slot, bool_t immediate)
     return ret;
 }
 
-static exception_t NO_INLINE reduceZombie(cte_t *slot, bool_t immediate)
+static exception_t reduceZombie(cte_t *slot, bool_t immediate)
 {
     cte_t *ptr;
     word_t n, type;
