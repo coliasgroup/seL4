@@ -1996,7 +1996,7 @@ static exception_t performASIDControlInvocation(void *frame, cte_t *slot,
     return EXCEPTION_NONE;
 }
 
-static exception_t decodeARMPageDirectoryInvocation(word_t invLabel, word_t length,
+static exception_t NO_INLINE decodeARMPageDirectoryInvocation(word_t invLabel, word_t length,
                                                     cptr_t cptr, cte_t *cte, cap_t cap,
                                                     word_t *buffer)
 {
@@ -2106,7 +2106,7 @@ static exception_t decodeARMPageDirectoryInvocation(word_t invLabel, word_t leng
 
 }
 
-static exception_t decodeARMPageTableInvocation(word_t invLabel, word_t length,
+static exception_t NO_INLINE decodeARMPageTableInvocation(word_t invLabel, word_t length,
                                                 cte_t *cte, cap_t cap, word_t *buffer)
 {
     word_t vaddr, pdIndex;
@@ -2229,7 +2229,7 @@ static exception_t decodeARMPageTableInvocation(word_t invLabel, word_t length,
     return performPageTableInvocationMap(cap, cte, pde, pdSlot);
 }
 
-static exception_t decodeARMFrameInvocation(word_t invLabel, word_t length,
+static exception_t NO_INLINE decodeARMFrameInvocation(word_t invLabel, word_t length,
                                             cte_t *cte, cap_t cap, bool_t call, word_t *buffer)
 {
     switch (invLabel) {
