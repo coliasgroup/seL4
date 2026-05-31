@@ -243,7 +243,7 @@ static UNUSED CONST inline unsigned clz32(uint32_t x)
     return count - x;
 }
 
-static UNUSED CONST inline unsigned clz64(uint64_t x)
+static UNUSED CONST unsigned NO_INLINE clz64(uint64_t x)
 {
     unsigned count = 64;
     uint64_t mask = UINT64_MAX;
