@@ -88,7 +88,7 @@ void clean_D_PoU(void)
     }
 }
 
-static inline void cleanInvalidate_D_by_level(int l)
+static void NO_INLINE cleanInvalidate_D_by_level(int l)
 {
     word_t s = readCacheSize(l, 0);
     int lbits = LINEBITS(s);
