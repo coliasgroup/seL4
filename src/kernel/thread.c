@@ -581,7 +581,7 @@ void setThreadState(tcb_t *tptr, _thread_state_t ts)
     scheduleTCB(tptr);
 }
 
-void scheduleTCB(tcb_t *tptr)
+void NO_INLINE scheduleTCB(tcb_t *tptr)
 {
     if (tptr == NODE_STATE(ksCurThread) &&
         NODE_STATE(ksSchedulerAction) == SchedulerAction_ResumeCurrentThread &&
