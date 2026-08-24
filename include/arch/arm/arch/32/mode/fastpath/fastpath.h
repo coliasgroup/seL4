@@ -28,7 +28,7 @@ compile_assert(SysReplyRecv_Minus2, SysReplyRecv == -2)
 
 /** MODIFIES: [*] */
 /** DONT_TRANSLATE */
-static inline void
+static NO_INLINE void
 clearExMonitor_fp(void)
 {
     word_t temp1 = 0;
