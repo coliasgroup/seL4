@@ -125,7 +125,7 @@ static inline void writeAuxiliaryControlRegister(word_t acr)
 
 /** MODIFIES: [*] */
 /** DONT_TRANSLATE */
-static inline void clearExMonitor(void)
+static NO_INLINE void clearExMonitor(void)
 {
     word_t tmp;
     asm volatile("strex r0, r1, [%0]" : : "r"(&tmp) : "r0");
