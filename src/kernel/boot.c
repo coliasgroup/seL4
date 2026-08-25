@@ -153,7 +153,7 @@ BOOT_CODE static bool_t insert_region(region_t reg)
     return false;
 }
 
-BOOT_CODE static pptr_t alloc_rootserver_obj(word_t size_bits, word_t n)
+BOOT_CODE static pptr_t NO_INLINE alloc_rootserver_obj(word_t size_bits, word_t n)
 {
     pptr_t allocated = rootserver_mem.start;
     /* allocated memory must be aligned */
@@ -869,7 +869,7 @@ BOOT_CODE void bi_finalise(void)
     };
 }
 
-BOOT_CODE static bool_t check_available_memory(word_t n_available,
+BOOT_CODE static bool_t NO_INLINE check_available_memory(word_t n_available,
                                                const p_region_t *available)
 {
     /* The system configuration is broken if no region is available. */
@@ -923,7 +923,7 @@ BOOT_BSS static region_t avail_reg[MAX_NUM_FREEMEM_REG];
  * check_available_memory(). Returns the number of entries populated in
  * avail_reg.
  */
-BOOT_CODE static word_t init_avail_reg(word_t n_available,
+BOOT_CODE static word_t NO_INLINE init_avail_reg(word_t n_available,
                                        const p_region_t *available)
 {
     word_t cnt = 0;
@@ -959,7 +959,7 @@ BOOT_CODE static word_t init_avail_reg(word_t n_available,
 }
 
 
-BOOT_CODE static bool_t check_reserved_memory(word_t n_reserved,
+BOOT_CODE static bool_t NO_INLINE check_reserved_memory(word_t n_reserved,
                                               const region_t *reserved)
 {
     printf("Reserved virt address space regions: %"SEL4_PRIu_word"\n",
