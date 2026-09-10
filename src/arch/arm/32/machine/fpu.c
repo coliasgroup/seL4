@@ -76,7 +76,7 @@ BOOT_CODE bool_t fpsimd_init(void)
 }
 #endif /* CONFIG_HAVE_FPU */
 
-BOOT_CODE bool_t fpsimd_HWCapTest(void)
+BOOT_CODE NO_INLINE bool_t fpsimd_HWCapTest(void)
 {
     word_t cpacr, fpsid;
 
